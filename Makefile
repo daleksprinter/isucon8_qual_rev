@@ -10,3 +10,6 @@ deps:
 .PHONY: build
 build:
 	GOPATH=`pwd`:`pwd`/vendor go build -v torb
+
+bench:
+	bash -c 'cd ~/torb/bench && ./bin/bench'
