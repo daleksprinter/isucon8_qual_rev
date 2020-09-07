@@ -12,4 +12,4 @@ build:
 	GOPATH=`pwd`:`pwd`/vendor go build -v torb
 
 bench:
-	bash -c 'cd ~/torb/bench && ./bin/bench'
+	bash -c 'cd ~/torb/bench && ./bin/bench -remotes "localhost:80"'
