@@ -1,3 +1,12 @@
+webserver_log = /var/log/h2o/access.log
+db_slowlog = /var/log/mysql/mysql-slow.sql
+bench_cmd = 'cd ~/torb/bench && ./bin/bench -remotes "localhost:80"'
+
+webserver_log_profile = access-log-profile
+db_slowlog_profile = mysql-log-profile
+pprof_profile = profile.pdf
+app_bin = ./torb
+
 all: build
 
 .PHONY: clean
@@ -14,24 +23,24 @@ build:
 profile: logrotate bench profiling slackcat
 
 logrotate:
-	: | sudo tee /var/log/h2o/access.log
-	: | sudo tee /var/log/mysql/mysql-slow.sql
+	: | sudo tee $(webserver_log)
+	: | sudo tee $(db_slowlog)
 
 bench:
-	bash -c 'cd ~/torb/bench && ./bin/bench -remotes "localhost:80"'
+	bash -c $(bench_cmd)
 
 profiling:
-	sudo cat /var/log/h2o/access.log | kataribe > access-log-profile
-	sudo mysqldumpslow -s t /var/log/mysql/mysql-slow.sql > mysql-log-profile
+	sudo cat $(webserver_log) | kataribe > $(webserver_log_profile)
+	sudo mysqldumpslow -s t $(db_slowlog) > $(db_slowlog_profile)
 
 slackcat:
-	slackcat --channel isucon access-log-profile
-	slackcat --channel isucon mysql-log-profile
+	slackcat --channel isucon $(webserver_log_profile)
+	slackcat --channel isucon $(db_slowlog_profile)
 
 pprof:
-	go tool pprof ./torb http://localhost:6060/debug/pprof/profile?seconds=60
+	go tool pprof $(app_bin) http://localhost:6060/debug/pprof/profile?seconds=60
 
 pprof-slackcat:
 	$(eval dump := $(shell ls --sort=time ~/pprof | head -n1))
-	go tool pprof -pdf ~/pprof/$(dump) > profile.pdf
-	slackcat --channel isucon profile.pdf
+	go tool pprof -pdf ~/pprof/$(dump) > $(pprof_profile)
+	slackcat --channel isucon $(pprof_profile)
