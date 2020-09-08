@@ -27,3 +27,11 @@ profiling:
 slackcat:
 	slackcat --channel isucon access-log-profile
 	slackcat --channel isucon mysql-log-profile
+
+pprof:
+	go tool pprof ./torb http://localhost:6060/debug/pprof/profile?seconds=60
+
+pprof-slackcat:
+	$(eval dump := $(shell ls --sort=time ~/pprof | head -n1))
+	go tool pprof -pdf ~/pprof/$(dump) > profile.pdf
+	slackcat --channel isucon profile.pdf
